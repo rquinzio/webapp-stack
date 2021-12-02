@@ -2,8 +2,8 @@
 A Docker Swarm stack including Traefik reverse proxy, metrics monitoring and visualization with Prometheus and Grafana. Also deploys an empty HTTPD server.
 
 ## Quick start
-- Clone the repository\
-`git clone https://github.com/rquinzio/webapp-stack`
+- Clone the repository:\
+  `git clone https://github.com/rquinzio/webapp-stack`
 
 - Edit _swarm.env_ in _configs/_ to your needs. Exemple:
 ```Shell
@@ -25,15 +25,25 @@ tls:
 - Copy your static website files in _webapp/_
 
 - Create Swarm overlay network:\
-`docker network create --driver overlay --scope swarm --label name=monitoring monitoring`
+  `docker network create --driver overlay --scope swarm --label name=monitoring monitoring`
 
 - Deploy the stack:\
-`docker stack deploy -c swarm-stack.yml my_webapp_stack`
+  `docker stack deploy -c swarm-stack.yml my_webapp_stack`
 
 You can now access your app and Grafana (add your own dashboards)
 
 ## More
 - All services have their own compose file in compose_files/
+  
+- For Prometheus to be fully functionnal, you have to edit your Docker daemon:\
+  `sudo vi /etc/docker/daemon.json`
+```Shell
+{
+	"metrics-addr" : "0.0.0.0:9323",
+	"experimental" : true,
+}
+```
+
 
 - This stack includes:
   - A Traefik reverse proxy ([Traefik documentation](https://doc.traefik.io/traefik/))
