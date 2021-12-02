@@ -1,0 +1,1 @@
+# This folder is empty on purpose, add your static site files in before deploying the stack

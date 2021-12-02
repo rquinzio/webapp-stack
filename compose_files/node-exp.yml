@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    networks:
+      - monitoring
+    command:
+      - '--path.procfs=/host/proc'       
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host'       
+      - '--collector.filesystem.ignored-mount-points="^(/rootfs|/host|)/(sys|proc|dev|host|etc)($$|/)"'       
+      - '--collector.filesystem.ignored-fs-types="^(sys|proc|auto|cgroup|devpts|ns|au|fuse\.lxc|mqueue)(fs|)$$"' 
+    volumes:
+      - /proc:/host/proc:ro       
+      - /sys:/host/sys:ro       
+      - /:/rootfs:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.node-exporter.entrypoints=web"
+        - "traefik.http.services.${STACK_NAME}_node-exporter.loadbalancer.server.port=9100"
+      env_file:
+        - ./configs/stack.env
+
+networks:
+  monitoring: 
+    external: true

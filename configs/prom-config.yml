@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 20s
+  scrape_timeout: 10s
+  external_labels:
+      monitor: 'stack-monitor'
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'traefik'
+    scrape_interval: 5s
+    dns_sd_configs:
+    - names:
+      - 'tasks.proxy'
+      type: 'A'
+      port: 8080
+
+  - job_name: 'docker_daemons'
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+        role: nodes
+    relabel_configs:
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: __address__
+        replacement: $1:9323
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance
+
+  - job_name: 'containers'
+    dns_sd_configs:
+    - names:
+      - 'tasks.cadvisor'
+      type: 'A'
+      port: 8080
+
+  - job_name: 'node-exporter'
+    dns_sd_configs:
+    - names:
+      - 'tasks.node-exporter'
+      type: 'A'
+      port: 9100

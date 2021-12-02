@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  webapp:
+    image: httpd:latest
+    networks:
+      - monitoring
+    volumes:
+      - ./webapp/:/usr/local/apache2/htdocs/:ro
+    deploy:
+      mode: replicated
+      replicas: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=monitoring"
+        - "traefik.http.routers.webapp.entrypoints=websecure"
+        - "traefik.http.routers.webapp.tls=true"
+        - "traefik.http.routers.webapp.rule=Host(`${APP_URI}`)"
+        - "traefik.http.services.${STACK_NAME}_webapp.loadbalancer.server.port=80"
+      restart_policy:
+        condition: on-failure
+      env_file:
+        - ./configs/stack.env
+
+networks:
+  monitoring:
+    external: true

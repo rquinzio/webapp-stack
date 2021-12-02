@@ -1,0 +1,6 @@
+tls:
+  certificates:
+    - certFile: /letsencrypt/my_webapp_cert
+      keyFile: /letsencrypt/my_webapp_privkey
+    - certFile: /letsencrypt/grafana_webapp_cert
+      keyFile: /letsencrypt/grafana_webapp_privkey

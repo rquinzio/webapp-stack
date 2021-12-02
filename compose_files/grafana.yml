@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - monitoring
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls=true"
+        - "traefik.http.routers.grafana.rule=Host(`${GRAF_URI}`)"
+        - "traefik.http.services.${STACK_NAME}_grafana.loadbalancer.server.port=3000"
+      restart_policy:
+          condition: on-failure
+      env_file:
+        - ./configs/stack.env
+
+networks:
+  monitoring: 
+    external: true

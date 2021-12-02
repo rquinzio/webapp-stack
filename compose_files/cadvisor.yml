@@ -1,0 +1,40 @@
+version: '3.9'
+services:
+  cadvisor:
+    image: docker
+    entrypoint: ["/bin/sh","-c"]
+    networks:
+      - monitoring
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - PARENT={{.Task.Name}}
+      - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
+      - CADVISOR_VERSION=latest
+    command: 
+    - |
+      exec docker run -i --rm --network="container:$${PARENT}" \
+            --volume=/cgroup:/cgroup:ro \
+            --volume=/:/rootfs:ro \
+            --volume=/var/run:/var/run:ro  \
+            --volume=/sys:/sys:ro  \
+            --volume=/var/lib/docker/:/var/lib/docker:ro \
+            --volume=/dev/disk/:/dev/disk:ro \
+            --name $${CHILDNAME} \
+            --privileged \
+            --device=/dev/kmsg \
+            gcr.io/cadvisor/cadvisor:$${CADVISOR_VERSION}
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.cadvisor.entrypoints=web"
+        - "traefik.http.services.${STACK_NAME}_cadvisor.loadbalancer.server.port=8080"
+    env_file:
+      - ./configs/stack.env
+
+networks:
+  monitoring:
+    external: true
